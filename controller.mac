@@ -1,0 +1,40 @@
+	 
+kp = 100
+kd = -1.5
+ki = 50000
+dzp   = Dif(i,1)
+integ = 0
+va    = 0
+
+*GET,Ele,NODE,SDIS,UZ                   !GET DISPLACEMENTS
+
+ 
+*set,x,Ele 
+*set,integ,integ+x*Tstep                !INTEGRAL   PART ACT TOP
+*set,diff,(x-dzp)/Tstep                 !DIRIVATIVE PART ACT TOP
+*set,VATOP,kp*x+ki*integ+kd*diff 
+
+*set,x,Ele 
+*set,integ,integ+x*Tstep                !INTEGRAL   PART ACT MID
+*set,diff,(x-dzp)/Tstep                 !DIRIVATIVE PART ACT MID
+*set,VBOT,kp*x+ki*integ+kd*diff 
+
+*if,Ele,LT,0,then
+   VBOT =-VBOT
+*Else
+   VATOP =-VATOP
+*Endif
+
+
+D,ANTOP,VOLT,VATOP      ! VOLTAGE ON ACTUATOR1 TOP
+D,MDTOP,VOLT,VATOP      ! VOLTAGE ON ACTUATOR2 TOP
+D,LOTOP,VOLT,VBOT       ! VOLTAGE ON ACTUATOR1 BOT
+D,ANBOT,VOLT,VBOT       ! VOLTAGE ON ACTUATOR2 BOT
+D,MDBOT,VOLT,VBOT       ! VOLTAGE ON ACTUATOR3 BOT
+D,LOBOT,VOLT,VATOP      ! VOLTAGE ON ACTUATOR3 TOP
+
+
+
+
+
+

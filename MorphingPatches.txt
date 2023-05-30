@@ -1,0 +1,309 @@
+FINISH
+/CLEAR
+/title,  Smart Morphing Wing-  K.Bendine
+/RGB,INDEX,100,100,100,0
+/RGB,INDEX,0,0,0,15
+/CWD,'D:\Morphing_Wings\MFCNewDesing\NeuralNetwork_ansys'
+/PREP7 
+
+ANLYS= 1!Analys      ! 1:Static Analysis
+                     ! 2: Transient Analysis
+SForce =0
+
+ET,11,COMBIN14    !--- The spring elements connecting rails and sleepers
+KEYOPT,11,1,0
+KEYOPT,11,2,3     !--- Uz
+KEYOPT,11,3,0
+
+!MP,EX,11,4.4E6   !--- spring z
+!MP,PRXY,11,0.1
+!MP,ALPD,11,0
+!MP,BETD,11,1e-6
+R,11,4.4e9,,      !--- the data of spring in z-dirction
+
+L_UL_active =56e-3          ! Active piezo length 
+W_UL_active =28e-3          ! Active piezo Width
+L_UL        =67e-3          ! Overall piezolength        
+W_UL        =35e-3          ! Overall Width 
+Z_cord      =2e-3           ! Distance btween MFC
+L_Midl_active= 85e-3        ! Active piezo length 
+W_Midl_active= 28e-3        ! Active piezo Width
+L_Midl       = 103e-3       ! Overall piezolength        
+W_Midl       = 35e-3        ! Overall Width 
+
+! MATERIAL Substrate
+*set, E_AL  , 70e9            ! Youngs Modulus Substrate [Pa]   
+*set, nu_AL , 0.3
+*set,dens_AL,3000             ! Density Substrate [Kg/m3]
+! MATERIAL Epoxy
+*set, E_Epoxy  , 41e6         ! Youngs Modulus Epoxy [Pa]   
+*set, nu_Epoxy , 0.3
+*set,dens_Epoxy,1000          ! Density Epoxy [Kg/m3]
+
+
+t1 =0.15e-3  ! MFC active part
+t2=0.05e-3   ! Epoxy glue
+t3=0.3e-3    ! Host Alumium part
+t4=0.3e-3    ! MFC active part
+
+X_start_M  = (L_Midl-L_Midl_active )/2
+Y_start_M  = (W_Midl-W_Midl_active )/2
+
+X_start_UL = X_start_M ! (L_UL-L_UL_active )/2
+Y_start_UL = Y_start_M !(W_UL-W_UL_active )/2
+
+
+! Defining elements and materials:
+! PZT-------------------------------------------------
+ET,1,Solid186
+MP,DENS,1,dens_AL 
+MP,EX  ,1,E_AL
+MP,PRXY,1,nu_AL 
+
+MP,DENS,3,dens_Epoxy            ! Epoxy Glue Density
+MP,EX  ,3,E_Epoxy               ! Epoxy Glue Youngs Modulus
+MP,PRXY,3,nu_Epoxy              ! Epoxy Glue Poisson Coef
+
+
+ET,2,solid226,1001              ! 3-D piezoelectric element
+MP,DENS,2,7800
+MP,PERX,2,1.45e-8               ! PIEZOELECTRIC PERMITTIVITY
+MP,PERY,2,1.45e-8
+MP,PERZ,2,1.55e-8               ! PERMITTIVITY (Z DIRECTION)...F/m
+TB,PIEZ,2                       ! DEFINE PIEZELECTRIC COUPLING TABLE 
+TBDATA,3,-12.15                 ! e31 PIEZOELECTRIC CONSTANT
+TBDATA,6,-12.15                 ! e32 PIEZOELECTRIC CONSTANT
+TBDATA,9,13.7                   ! e33 PIEZOELECTRIC CONSTANT
+TBDATA,14,11.9                  ! e15 PIEZOELECTRIC CONSTANT
+TBDATA,16,11.9                  ! e16 PIEZOELECTRIC CONSTANT
+
+TB,ANEL,2                           ! DEFINE STRUCTURAL TABLE/ UPPER MATRIX TRIANGLE
+TBDATA,1,1.23e11,7.67e10,7.025e10   ! C11, C12, C13 FIRST ROW
+TBDATA,7,1.23e11,7.025e10           ! C11=C22, C13, SECOND ROW
+TBDATA,12,9.711e10                  ! C33 THIRD ROW
+TBDATA,16,2.26e10                   ! C44 FOURTH ROW
+TBDATA,19,2.226e10                  ! C55 FIFTH ROW
+TBDATA,21,2.315e10                  ! C66 SIXTH ROW
+
+
+!! Lower MFC
+block, X_start+X_start_UL,X_start+X_start_UL+L_UL_active,  Y_start_UL,Y_start_UL+W_UL_active, -Z_cord,-(Z_cord+t4)
+block, X_start,L_UL,    0,W_UL, -(Z_cord+t4),-(Z_cord+t4+t2)
+block, X_start,L_UL,    0,W_UL, -(Z_cord+t4+t2),-(Z_cord+t4+t2+t3)
+block, X_start,L_UL,    0,W_UL, -(Z_cord+t4+t2+t3),-(Z_cord+t4+2*t2+t3)
+block, X_start+X_start_UL,X_start+X_start_UL+L_UL_active,  Y_start_UL,Y_start_UL+W_UL_active, -(Z_cord+t4+2*t2+t3),-(Z_cord+2*t4+2*t2+t3)
+
+!! Midel MFC
+block, X_start+X_start_M,X_start+X_start_M+L_Midl_active,    Y_start_UL,Y_start_M+W_Midl_active,-t3/2-t2-t4 ,-t3/2-t2
+block, X_start,L_Midl ,          0,W_Midl , -t3/2-t2,-t3/2
+block, X_start,L_Midl ,          0,W_Midl , -t3/2,t3/2
+block, X_start,L_Midl ,          0,W_Midl , t3/2,t3/2+t2
+block, X_start+X_start_M,X_start+X_start_M+L_Midl_active,    Y_start_UL,Y_start_M+W_Midl_active, +t3/2+t2 ,t3/2+t2+t4
+
+!! Upper MFC
+block, X_start+X_start_UL,X_start+X_start_UL+L_UL_active,  Y_start_UL,Y_start_UL+W_UL_active, Z_cord,Z_cord+t4
+block, X_start,L_UL,    0,W_UL, Z_cord+t4,Z_cord+t4+t2
+block, X_start,L_UL,    0,W_UL, Z_cord+t4+t2,Z_cord+t4+t2+t3
+block, X_start,L_UL,    0,W_UL, Z_cord+t4+t2+t3,Z_cord+t4+2*t2+t3
+block, X_start+X_start_UL,X_start+X_start_UL+L_UL_active,  Y_start_UL,Y_start_UL+W_UL_active, Z_cord+t4+2*t2+t3,Z_cord+2*t4+2*t2+t3
+
+allsel,all
+vsel,s,volum,,1,5,4
+vsel,a,volum,,6,10,4
+vsel,a,volum,,11,15,4
+Cm,PiezoMFC, Volum
+Vatt,2,1,2
+
+vsel,s,volum,,3,13,5
+Cm,Substra, Volum
+Vatt,1,1,1
+
+vsel,s,volum,,2,4,2
+vsel,a,volum,,7,9,2
+vsel,a,volum,,12,14,2
+Cm,GLue, Volum
+Vatt,3,1,1
+
+Vsel,all
+vglue,all
+
+WPROTA,,-90
+WPOFFS,,,Y_start_M
+VSBW,ALL
+WPOFFS,,,W_UL_active
+VSBW,ALL
+
+!!_ Devid the Upper and Lower MFC to preper for the mesh
+!!***
+
+Vsel,s,loc,z,t3/2+t2+t4,Z_cord+2*t4+2*t2+t3
+Vsel,a,loc,z,-t3/2-t2-t4,-(Z_cord+2*t4+2*t2+t3)
+Cm,Upper, Volum
+WPROTA,,,90
+WPOFFS,,,X_start_M 
+VSBW,ALL
+WPOFFS,,,L_UL_active
+VSBW,ALL
+WPCSYS,,0
+
+Vsel,all
+!!_ Devid the Midel MFC to preper for the mesh
+!!***
+Vsel,s,loc,z,-t3/2-t2-t4 ,t3/2+t2+t4
+WPROTA,,,90
+WPOFFS,,,X_start_M 
+VSBW,ALL
+WPOFFS,,,L_Midl_active
+VSBW,ALL
+WPCSYS,,0
+
+
+vsel,s,loc,z, -(Z_cord+t4),-(Z_cord+t4+t2)
+vsel,a,loc,z, -(Z_cord+t4+t2+t3),-(Z_cord+t4+2*t2+t3)
+
+vsel,a,loc,z, -t3/2-t2,-t3/2
+vsel,a,loc,z, t3/2,t3/2+t2
+
+vsel,a,loc,z, Z_cord+t4,Z_cord+t4+t2
+vsel,a,loc,z, Z_cord+t4+t2+t3,Z_cord+t4+2*t2+t3
+Vatt,3,1,1
+
+
+Allsel,all
+Esize,2e-3
+Vmesh,all
+allsel,all
+Nummrg,node,all
+Nummrg,KP,all
+allsel,all
+
+!! MFC UPPer
+
+!Vsel,a,volum,,15
+
+!! Electrodes --------------------
+!! MFC Upper
+Asel,s,Area,,86
+Asel,A,Area,,61
+Nsla,s,1
+*get,ANTOP,node,0,num,min
+Cp,1,volt,all
+D,ANTOP,VOLT,0,0
+
+!Vsel,s,volum,,11
+Asel,s,Area,,62
+Asel,A,Area,,85
+Nsla,s,1
+*get,ANBOT,node,0,num,min
+Cp,2,volt,all
+D,ANBOT,VOLT,0,0
+
+
+!! MFC Midel------------------------
+!Vsel,s,volum,,10
+Asel,s,Area,,56
+Asel,A,Area,,31
+Nsla,s,1
+*get,MDTOP,node,0,num,min
+Cp,3,volt,all
+D,MDTOP,VOLT,0,0
+
+!Vsel,s,volum,,6
+Asel,s,Area,,32
+Asel,A,Area,,55
+Nsla,s,1
+*get,MDBOT,node,0,num,min
+Cp,4,volt,all
+D,MDBOT,VOLT,0,0
+
+!! MFC Lower-----------------------
+Vsel,s,volum,,1
+Vsel,a,volum,,5
+
+Asel,s,Area,,2
+Asel,A,Area,,25
+Nsla,s,1
+*get,LOBOT,node,0,num,min
+Cp,5,volt,all
+D,LOBOT,VOLT,0,0
+
+Asel,s,Area,,1
+Asel,A,Area,,26
+Nsla,s,1
+*get,LOTOP,node,0,num,min
+Cp,6,volt,all
+D,LOTOP,VOLT,0,0
+!!------------------------------------
+allsel,all
+
+
+
+!!! Coupling nodes for the linking barres
+!!!**************************************
+nsel,s,node,,35403
+nsel,a,node,,15299
+nsel,a,node,,15507
+*get,Left_Couple,node,0,num,min
+Cp,7,UZ,all
+!-----
+nsel,s,node,,37516
+nsel,a,node,,36834
+nsel,a,node,,33170
+*get,MID_Couple,node,0,num,min
+Cp,8,UZ,all
+!-----
+nsel,s,node,,30757
+nsel,a,node,,36870
+nsel,a,node,,23046
+*get,righ_Couple,node,0,num,min
+Cp,9,UZ,all
+!----------------------
+nsel,s,node,,37852
+nsel,a,node,,38072
+nsel,a,node,,37992
+*get,Leftd_Couple,node,0,num,min
+Cp,10,UZ,all
+!-----
+nsel,s,node,,41387
+nsel,a,node,,45230
+nsel,a,node,,41933
+*get,midd_Couple,node,0,num,min
+Cp,11,UZ,all
+!-----
+nsel,s,node,,35338
+nsel,a,node,,45266
+nsel,a,node,,36598
+*get,RIGHTd_Couple,node,0,num,min
+Cp,12,UZ,all
+!!!**************************************
+allsel,all
+*get,Nend,node,,count
+
+*if,SForce,eq,1,then
+!!! Force Spring
+type,11
+mat,11
+real,11
+
+N,Nend+1,L_Midl,W_UL/2,1.8*Z_cord
+E,Nend+1,43779
+*else
+*endif
+
+
+
+Allsel,all
+
+
+Nsel,s,loc,x,0
+Nsel,a,node,,Nend+1
+D,all,ux,0,,,,uy,uz		 ! Defines DOF constraints, clamp the end
+nsel,all
+allsel,all
+Finish
+
+
+
+*Use,TranANN.mac
+
+

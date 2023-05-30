@@ -1,0 +1,29 @@
+*DIM,Dif,array,50,1
+*VREAD,Dif(1,1),Def_Inp,'txt',' ', ,
+(F14.4)
+
+*DIM,b1,array,200,1
+*VREAD,b1(1,1),b1,'txt',' ', ,
+(F14.4)
+
+*DIM,b2,array,2,1
+*VREAD,b2(1,1),b2,'txt',' ', ,
+(F14.4)
+
+*DIM,IW,array,200,1
+*VREAD,IW(1,1),IW,'txt',' ', ,
+(F14.4)
+
+*DIM,LW1,array,200,1
+*VREAD,LW1(1,1),LW1,'txt',' ', ,
+(F14.4)
+
+*DIM,LW2,array,200,1
+*VREAD,LW2(1,1),LW2,'txt',' ', ,
+(F14.4)
+
+*DIM,Ninput,array,2,1
+*DIM,CC1,array,2,1
+*DIM,CC2,array,2,1
+*DIM,Y,array,2,1
+*DIM,ActFun,array,200,1

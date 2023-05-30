@@ -1,0 +1,59 @@
+
+/SOLU   
+/STATUS,SOLU
+iterD=1
+
+
+
+Load=1500
+LoadB=-500
+Antype,static
+
+Allsel,all
+
+D,ANTOP,VOLT,Load
+D,MDTOP,VOLT,Load
+D,LOTOP,VOLT,LoadB
+D,ANBOT,VOLT,LoadB
+D,MDBOT,VOLT,LoadB
+D,LOBOT,VOLT,Load
+
+
+AllSEL,ALL
+
+KBC,1
+OUTPR,,ALL
+SOLVE
+allsel,all
+
+
+  Esel,s,mat,,4
+  NSLE,s,1
+  Nsel,r,loc,x,X_start,X_start+L_Midl
+  Nsel,r,loc,Y,0
+  Nsel,r,loc,z,0,Chord
+  *get,NWiUPP,node,,count ! total node number 
+  *dim,NodalWUpper,,NWiUPP,1 
+  *vget,NodalWUpper(1,1),node,,u,z 
+
+Allsel,all
+  Esel,s,mat,,4
+  NSLE,s,1
+  Nsel,r,loc,x,X_start,X_start+L_Midl
+  Nsel,r,loc,Y,0
+  Nsel,r,loc,z,0,-Chord
+  *get,NWithLOW,node,,count ! total node number 
+  *dim,NodalWLOWER,,NWithLOW,1 
+  *vget,NodalWLOWER(1,1),node,,u,z 
+
+
+
+allsel,all
+
+*CFOPEN,ResultsMorphing,txt,' '
+*VWRITE,NodalWUpper(1,1),NodalWLOWER(1,1)
+(E,E) 
+*cfclos
+
+
+FINISH

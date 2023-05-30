@@ -1,0 +1,4 @@
+
+OutR=Out*(max(Out)-min(Out))+min(Out)
+
+InpR =Inp*(max(inp)-min(inp))+min(inp))

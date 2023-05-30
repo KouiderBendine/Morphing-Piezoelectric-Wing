@@ -1,0 +1,76 @@
+Va=0
+EQ=0
+Tstop=5
+TIM=Tstop/50
+NODDis=181922!43889
+!! Read Text files
+!!-------------- 
+*DIM,Dif,array,50,1
+*VREAD,Dif(1,1),Def_Inp,'txt',' ', ,
+(F14.4)
+
+*DIM,b1,array,200,1
+*VREAD,b1(1,1),b1,'txt',' ', ,
+(F14.4)
+
+*DIM,b2,array,2,1
+*VREAD,b2(1,1),b2,'txt',' ', ,
+(F14.4)
+
+*DIM,IW,array,200,1
+*VREAD,IW(1,1),IW,'txt',' ', ,
+(F14.4)
+
+*DIM,LW1,array,200,1
+*VREAD,LW1(1,1),LW1,'txt',' ', ,
+(F14.4)
+
+*DIM,LW2,array,200,1
+*VREAD,LW2(1,1),LW2,'txt',' ', ,
+(F14.4)
+
+*DIM,Ninput,array,2,1
+*DIM,CC1,array,2,1
+*DIM,CC2,array,2,1
+*DIM,Y,array,2,1
+*DIM,C,array,200,1
+*DIM,ActFun,array,200,1
+*Dim,xinp,array,1,1
+
+/SOLU 
+allsel,all
+*CFOPEN,strcat(chrval(1),'ControlResut'),txt,' '
+ANTYPE,4
+TRNOPT,FULL,,DAMP 
+LUMPM,0 
+OUTRES,ALL,ALL
+DELTIM,TIM			! Specifies the time step sizes
+TINTP,,0.25,0.5,0.5
+!At the starting point
+TIME,TIM			! Sets time to Tstep seconds
+
+KBC,1				! Ramped load step
+countr=0
+*Do,t,2*TIM,Tstop,TIM
+   Time,t
+   countr=countr+1
+   *Use,ANNController.mac
+SOLVE
+*GET,Disp,NODE,NODDis,U,Z 
+*VWRITE,t,Disp,OutP,OutN
+%0.0f,%0.0f,%0.0f,%0.0f
+
+DDELE,ANTOP,VOLT
+DDELE,MDTOP,VOLT
+DDELE,LOTOP,VOLT
+DDELE,ANBOT,VOLT
+DDELE,MDBOT,VOLT
+DDELE,LOBOT,VOLT
+
+*ENDDO
+*Cfclos
+FINISH
+
+
+
+
