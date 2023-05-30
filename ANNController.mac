@@ -1,0 +1,39 @@
+
+!! Matrix Multiplication
+!************************
+!! y_ann_explicit = b2 + LW*tansig(b1+IW*X_inp) +[0.9367 0]';
+!!---
+
+*Set,Xinp(1,1),Dif(countr,1)
+!*VOPER, Total, Xinp, MULT, IW              !! X_inp (1) = b1+IW*X_inp
+*MFUN, ALW, TRAN, LW1                       !! Matrix transpose
+*MFUN, BLW, TRAN, LW2                       !! Matrix transpose
+*Do,j,1,200,1
+C(j,1)=IW(j)*xinp(1,1)
+*enddo
+*VOPER, Total, C, ADD, b1                   !!  X_inp (1) = b1+IW*X_inp
+
+*Set,Ninput(1,1),0.9367                   
+*Set,Ninput(2,1),0                            
+*DO,iter,1,200
+   ActFun(iter,1)=2/(1+exp(-2*Total(iter,1)))-1  !! Acti_Function LW*tansig(b1+IW*xV)
+*Enddo
+
+*MOPER, CC1, ALW, MULT, ActFun                 !!  LW1*tansig(b1+IW*X_inp)
+*MOPER, CC2, BLW, MULT, ActFun                 !!  LW2*tansig(b1+IW*X_inp)  
+*Set,Y(1,1),CC1(1,1)+b2(1,1)                   !!  Y(1,1)  = b2 + LW*tansig(b1+IW*xV)
+*Set,Y(2,1),CC2(1,1)+b2(2,1)                   !!  Y(2,1)  = b2 + LW*tansig(b1+IW*xV)
+!*VOPER, Y(1,1), CC1, ADD, b2(1,1)             !!  Y(1,1)  = b2 + LW*tansig(b1+IW*xV)
+*VOPER, VANN, Y, ADD, Ninput                   !!  VANN    = b2 + LW*tansig(b1+IW*xV)+[0.9367 0]'
+
+
+OutP=VANN(1,1)*(100-50)+12    ! dinormalised the voltage
+OutN=VANN(2,1)*(100-50)+12    ! dinormalised the voltage
+
+
+D,ANTOP,VOLT,OutP
+D,MDTOP,VOLT,OutP
+D,LOTOP,VOLT,OutN
+D,ANBOT,VOLT,OutN
+D,MDBOT,VOLT,OutN
+D,LOBOT,VOLT,OutP
